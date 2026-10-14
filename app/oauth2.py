@@ -21,24 +21,27 @@ def create_token(data: dict):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
 
-    encode_jwt = jwt.encode(to_encode, SECRECT_KEY, algorithm=ALGORITHM)
+    encode_jwt = jwt.encode(to_encode, SECRECT_KEY, algorithms=ALGORITHM)
     return encode_jwt
 
 
 def verify_token(token: str, details_exception):
     try:
-        payload = jwt.decode(token, SECRECT_KEY, algorithm=ALGORITHM)
+        payload = jwt.decode(token, SECRECT_KEY, algorithms=[ALGORITHM])
+        print("JWT PAYLOAD:", payload)
 
         id: int = payload.get("admin_id")
+        print("ADMIN ID:", id)
         if id is None:
             raise details_exception
         token = schemas.TokenData(admin_id=id)
-    except InvalidTokenError:
+    except InvalidTokenError as e:
+        print("JWT ERROR:", str(e))
         raise details_exception
     return token.admin_id
 
 
-def get_current_admin(token: str):
+def get_current_admin(token: str = Depends(oauth2_schema)):
     details_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Couldn't validate details.",

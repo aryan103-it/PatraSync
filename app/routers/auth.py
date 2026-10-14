@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException, responses, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from ..database import get_db
-from .. import schemas, models, utils, oauth2
+from .. import schemas, models, utils, oauth2, api_key
 
 router = APIRouter(prefix="/login", tags=["Login"])
 
@@ -29,3 +29,11 @@ def login(
     access_token = oauth2.create_token(data={"admin_id": admin.id})
 
     return {"access_token": access_token, "token_type": "Bearer"}
+
+
+@router.get("/generate")
+def generate_api_key(
+    current_admin: models.Admins = Depends(oauth2.get_current_admin),
+    db: Session = Depends(get_db),
+):
+    return api_key.create_api_key(current_admin, db)

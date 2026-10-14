@@ -20,3 +20,9 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     admin_id: int
+
+
+class Email(BaseModel):
+    sender_email: str
+    subject: str
+    body: str
